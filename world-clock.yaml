@@ -1,0 +1,65 @@
+esphome:
+  name: world-clock
+  platform: ESP32
+  board: lolin32
+
+substitutions:
+ <<: !include ./world-clock/world-clock.yaml
+
+time:
+  - platform: sntp
+    timezone: "GMT"
+    id: clocky
+    servers:
+      - 50.208.57.188
+
+ota:
+  password: ${ota_pass}
+  
+wifi:
+  ssid: espota
+  password: ${wifi_pass}
+  fast_connect: True
+  power_save_mode: none
+  manual_ip:
+    static_ip: 
+    gateway: 
+    subnet: 
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+font:
+  - file: "arial.ttf"
+    id: font1
+
+display:
+  - platform: lcd_pcf8574
+    dimensions: 20x4
+    address: 0x27
+    id: lcd
+    lambda: |-
+      setenv("TZ", "BST0GMT,M3.2.0/2:00:00,M11.1.0/2:00:00", 1);
+      tzset();
+      auto time = id(clocky).now();
+      if (time.is_valid())
+        it.strftime(0, 0, "%H:%M Blighty", time);
+      setenv("TZ", "EST5EDT,M3.2.0/2:00:00,M11.1.0/2:00:00", 1);
+      tzset();
+      time = id(clocky).now();
+      if (time.is_valid())
+        it.strftime(0, 1, "%H:%M Flori-duh", time);
+            setenv("TZ", "CEST-1CET,M3.2.0/2:00:00,M11.1.0/2:00:00", 1);
+      tzset();
+      time = id(clocky).now();
+      if (time.is_valid())
+        it.strftime(0, 2, "%H:%M Chuhmany", time);
+            setenv("TZ", "IST-5:30", 1);
+      tzset();
+      time = id(clocky).now();
+      if (time.is_valid())
+        it.strftime(0, 3, "%H:%M Madras Time", time);
+
+# Posix time reference for above zones
+# https://support.cyberdata.net/portal/en/kb/articles/010d63c0cfce3676151e1f2d5442e311
